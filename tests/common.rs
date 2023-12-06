@@ -1,15 +1,13 @@
-use std::sync::{Arc, Mutex};
-
 use axum::{http, Router};
 use axum::body::Body;
 use axum::http::Request;
 use axum::response::Response;
-use chrono::Utc;
 use http_body_util::BodyExt;
 use serde_json::Value;
-use uuid::Uuid;
+use sqlx::PgPool;
 
-use todo::model::{AppState, SharedState, Todo};
+use todo::configuration::{get_connection_pool, load_configuration};
+use todo::model::AppState;
 use todo::routes::get_routes;
 
 pub fn send_get_request(uri: &str) -> Request<Body> {
@@ -29,19 +27,14 @@ pub fn send_post_request(uri: &str, body: Body) -> Request<Body> {
         .unwrap()
 }
 
-pub fn get_state() -> SharedState {
-    let mut todos = Vec::new();
-    todos.push(Todo {
-        id: Uuid::new_v4(),
-        title: "title".to_string(),
-        content: "content".to_string(),
-        completed: true,
-        created_at: Utc::now(),
-    });
-    Arc::new(Mutex::new(AppState { todos }))
+pub async fn get_default_app() -> Router {
+    let configuration = load_configuration().expect("Failed to read configuration.");
+    let connection_pool = get_connection_pool(&configuration.database);
+    app_with_pool(connection_pool).await
 }
 
-pub async fn get_default_app(state: &SharedState) -> Router {
+pub async fn app_with_pool(pool: PgPool) -> Router {
+    let state = AppState { db: pool };
     get_routes()
         .with_state(state.clone())
 }

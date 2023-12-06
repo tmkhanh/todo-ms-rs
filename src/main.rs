@@ -1,12 +1,16 @@
-use std::sync::{Arc, Mutex};
+use todo::configuration::{get_connection_pool, load_configuration};
 use todo::model::AppState;
 use todo::routes::get_routes;
 
 #[tokio::main]
 async fn main() {
-    let app = get_routes()
-        .with_state(Arc::new(Mutex::new(AppState { todos: Vec::new() })));
+    let configuration = load_configuration().expect("Failed to read configuration.");
+    let connection_pool = get_connection_pool(&configuration.database);
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    let app = get_routes()
+        .with_state(AppState { db: connection_pool });
+
+    let url = format!("{}:{}", configuration.application.host, configuration.application.port);
+    let listener = tokio::net::TcpListener::bind(url).await.unwrap();
     axum::serve(listener, app).await.unwrap();
 }

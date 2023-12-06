@@ -1,6 +1,6 @@
-use std::sync::{Arc, Mutex};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use sqlx::{Pool, Postgres};
 use uuid::Uuid;
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
@@ -19,9 +19,9 @@ pub struct CreateTodo {
     pub content: String
 }
 
-#[derive(Default)]
+#[derive(Clone)]
 pub struct AppState {
-    pub todos: Vec<Todo>,
+    pub db: Pool<Postgres>,
 }
 
-pub type SharedState = Arc<Mutex<AppState>>;
+pub type SharedState = AppState;
