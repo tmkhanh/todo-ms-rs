@@ -8,7 +8,7 @@ use sqlx::PgPool;
 
 use todo::configuration::{get_connection_pool, load_configuration};
 use todo::model::AppState;
-use todo::routes::get_routes;
+use todo::rest::get_routes;
 
 pub fn send_get_request(uri: &str) -> Request<Body> {
     Request::builder()

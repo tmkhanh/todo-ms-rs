@@ -1,6 +1,6 @@
 use todo::configuration::{get_connection_pool, load_configuration};
 use todo::model::AppState;
-use todo::routes::get_routes;
+use todo::rest::get_routes;
 
 #[tokio::main]
 async fn main() {

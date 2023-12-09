@@ -1,10 +1,11 @@
 use axum::{Json, Router};
 use axum::extract::{Path, State};
-use axum::http::StatusCode;
 use axum::routing::{get, post};
 use axum_macros::debug_handler;
 use uuid::Uuid;
+use validator::Validate;
 
+use crate::error::Error;
 use crate::model::{CreateTodo, SharedState, Todo};
 
 pub fn router() -> Router<SharedState> {
@@ -15,20 +16,19 @@ pub fn router() -> Router<SharedState> {
         )
         .route(
             "/todo/:id",
-            get(get_todo_handler)
+            get(get_todo_handler),
         )
 }
 
 pub async fn get_todo_list_handler(
     State(state): State<SharedState>
-) -> Result<Json<Vec<Todo>>, (StatusCode, String)> {
+) -> Result<Json<Vec<Todo>>, Error> {
     let todos: Vec<Todo> = sqlx::query_as!(
         Todo,
         "SELECT id, title, content, completed, created_at FROM todo"
     )
         .fetch_all(&state.db)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .await?;
 
     Ok(Json(todos))
 }
@@ -36,27 +36,27 @@ pub async fn get_todo_list_handler(
 pub async fn get_todo_handler(
     Path(id): Path<Uuid>,
     State(state): State<SharedState>,
-) -> Result<Json<Todo>, (StatusCode, String)> {
+) -> Result<Json<Todo>, Error> {
     let todo = sqlx::query_as!(
         Todo,
         "SELECT id, title, content, completed, created_at FROM todo WHERE id=$1",
         id
     )
         .fetch_optional(&state.db)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .await?;
 
     match todo {
         Some(value) => Ok(Json(value)),
-        _ => Err((StatusCode::NOT_FOUND, format!("Todo(id={}) not found", id)))
+        _ => Err(Error::NotFound("Todo".into()))
     }
 }
 
 #[debug_handler]
 pub async fn create_todo_handler(
     State(state): State<SharedState>,
-    Json(body): Json<CreateTodo>,
-) -> Result<Json<Todo>, (StatusCode, String)> {
+    Json(req): Json<CreateTodo>,
+) -> Result<Json<Todo>, Error> {
+    req.validate()?;
     let todo = sqlx::query_as!(
         Todo,
         r#"
@@ -64,15 +64,11 @@ pub async fn create_todo_handler(
             VALUES ($1, $2)
             RETURNING id, title, content, completed, created_at
         "#,
-        body.title,
-        body.content
+        req.title,
+        req.content
     )
         .fetch_one(&state.db)
-        .await
-        .map_err(|e| {
-            let error = format!("{:?}", e);
-            (StatusCode::INTERNAL_SERVER_ERROR, error)
-        } )?;
+        .await?;
 
     Ok(Json(todo))
 }

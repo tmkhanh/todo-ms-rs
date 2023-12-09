@@ -1,3 +1,4 @@
 pub mod model;
-pub mod routes;
+pub mod rest;
 pub mod configuration;
+mod error;

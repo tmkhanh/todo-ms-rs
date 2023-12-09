@@ -1,5 +1,5 @@
 mod common;
-mod api {
+mod rest {
     mod health;
     mod todo;
 }
