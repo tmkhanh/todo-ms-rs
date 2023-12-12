@@ -2557,6 +2557,8 @@ dependencies = [
  "thiserror",
  "tokio",
  "tower",
+ "tracing",
+ "tracing-core",
  "tracing-subscriber",
  "uuid",
  "validator",

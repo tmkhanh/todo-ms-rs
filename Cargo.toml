@@ -28,6 +28,8 @@ anyhow = "1.0.75"
 thiserror = "1.0.50"
 validator = { version = "0.16.1", features = ["derive"] }
 serde_with = { version = "3.4.0", features = [] }
+tracing = "0.1.40"
+tracing-core = "0.1.32"
 
 [dev-dependencies]
 http-body-util = "0.1.0"

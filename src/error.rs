@@ -32,6 +32,7 @@ pub enum Error {
 }
 
 impl IntoResponse for Error {
+
     fn into_response(self) -> Response {
         #[serde_with::serde_as]
         #[serde_with::skip_serializing_none]
@@ -51,7 +52,7 @@ impl IntoResponse for Error {
 
         // Normally you wouldn't just print this, but it's useful for debugging without
         // using a logging framework.
-        println!("API error: {self:?}");
+        tracing::error!("API error: {self:?}");
         (
             self.status_code(),
             Json(ErrorResponse {

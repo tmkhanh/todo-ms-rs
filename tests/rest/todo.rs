@@ -1,7 +1,5 @@
 #[cfg(test)]
 mod todo_tests {
-    use std::borrow::BorrowMut;
-
     use axum::body::Body;
     use axum::http::StatusCode;
     use axum::Router;
@@ -9,11 +7,12 @@ mod todo_tests {
     use serde_json::json;
     use sqlx::PgPool;
     use tower::ServiceExt;
+    use std::borrow::BorrowMut;
     use uuid::Uuid;
 
     use todo::model::{CreateTodo, Todo};
 
-    use crate::common::{app_with_pool, get_response_body_value, send_get_request, send_post_request};
+    use crate::common::{app_with_pool, send_get_request, get_response_body_value, send_post_request};
 
     async fn try_create_todo(router: &mut Router) -> (CreateTodo, Todo) {
         let millis = Utc::now().timestamp_millis();

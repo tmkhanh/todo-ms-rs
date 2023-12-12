@@ -1,7 +1,6 @@
 use axum::{Json, Router};
 use axum::extract::{Path, State};
 use axum::routing::{get, post};
-use axum_macros::debug_handler;
 use uuid::Uuid;
 use validator::Validate;
 
@@ -47,11 +46,10 @@ pub async fn get_todo_handler(
 
     match todo {
         Some(value) => Ok(Json(value)),
-        _ => Err(Error::NotFound("Todo".into()))
+        _ => Err(Error::NotFound(format!("Todo(id={})", id)))
     }
 }
 
-#[debug_handler]
 pub async fn create_todo_handler(
     State(state): State<SharedState>,
     Json(req): Json<CreateTodo>,

@@ -14,7 +14,7 @@ pub struct Todo {
     pub created_at: DateTime<Utc>,
 }
 
-#[derive(Deserialize, Serialize, Validate)]
+#[derive(Deserialize, Serialize, Validate, Debug)]
 pub struct CreateTodo {
     pub title: String,
     pub content: String
